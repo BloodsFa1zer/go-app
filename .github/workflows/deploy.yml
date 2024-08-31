@@ -1,16 +1,16 @@
-name: Deploy Go App to EC2
+name: Deploy to EC2
 
 on:
   push:
     branches:
-      - main  # Replace with your branch name
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Set up SSH
@@ -19,16 +19,5 @@ jobs:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
       - name: Deploy to EC2
-        env:
-          EC2_USER: ec2-user
-          EC2_HOST: your-ec2-instance-public-dns  # Replace with your EC2 instance public DNS or IP
-          EC2_PATH: /home/ec2-user/go-app  # The path on your EC2 where the app will be deployed
-
         run: |
-          scp -o StrictHostKeyChecking=no -r * $EC2_USER@$EC2_HOST:$EC2_PATH
-          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
-            cd ~/go-app
-            go build -o main ./main.go
-            sudo killall main || true  # Stop the previous instance if running
-            nohup ./main &> app.log &
-          EOF
+          ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-instance-public-dns "cd /home/ec2-user/go-app && git pull origin main && go build -o main ./main.go && nohup ./main &"
