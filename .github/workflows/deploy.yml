@@ -20,9 +20,11 @@ jobs:
 
       - name: Debug SSH
         run: |
+          eval $(ssh-agent -s)
+          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' | ssh-add -
           ssh-keyscan -H ec2-18-198-2-85.eu-central-1.compute.amazonaws.com >> ~/.ssh/known_hosts
-          ssh -v -o StrictHostKeyChecking=no ec2-user@ec2-18-198-2-85.eu-central-1.compute.amazonaws.com "echo 'SSH connection successful'"
+          ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ec2-user@ec2-18-198-2-85.eu-central-1.compute.amazonaws.com "echo 'SSH connection successful'"
 
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@ec2-18-198-2-85.eu-central-1.compute.amazonaws.com "cd /home/ec2-user/go-app && git pull origin main && go build -o main ./main.go && nohup ./main &"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ec2-user@ec2-18-198-2-85.eu-central-1.compute.amazonaws.com "cd /home/ec2-user/go-app && git pull origin main && go build -o main ./main.go && nohup ./main &"
