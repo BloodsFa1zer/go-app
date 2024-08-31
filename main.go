@@ -24,7 +24,7 @@ func main() {
 
 	// Register API handlers
 	http.HandleFunc("/", handlers.HelloHandler)
-	http.HandleFunc("/items", handlers.ItemsHandler)
+	http.HandleFunc("/item", handlers.ItemsHandler)
 	http.HandleFunc("/randomuser", handlers.GetRandomUser)
 
 	fmt.Println("Server listening on port", port)
