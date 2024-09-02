@@ -1,9 +1,9 @@
-name: Simple EC2 Deploy
+name: Deploy to EC2
 
 on:
   push:
     branches:
-      - master  # or master, depending on your default branch name
+      - master
 
 jobs:
   deploy:
@@ -13,16 +13,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add EC2 instance to known_hosts
+        run: ssh-keyscan -H ec2-18-198-2-85.eu-central-1.compute.amazonaws.com >> ~/.ssh/known_hosts
+
       - name: Deploy to EC2
         env:
-          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOST: ec2-18-198-2-85.eu-central-1.compute.amazonaws.com
-          USER: ubuntu
+          EC2_HOST: ec2-18-198-2-85.eu-central-1.compute.amazonaws.com
+          EC2_USER: ec2-user
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
-            cd ~/go-app-deploy &&
-            git pull origin master &&
-            go build -o app &&
-            ./app &
-          '
+          ssh -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST << 'EOF'
+            cd /home/ec2-user/go-app
+            git pull origin master
+            go build -o main ./main.go
+            pkill -f ./main || true
+            nohup ./main &
+          EOF
