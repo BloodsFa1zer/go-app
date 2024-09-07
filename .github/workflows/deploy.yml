@@ -29,7 +29,7 @@ jobs:
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           HOST: ${{ secrets.EC2_HOST }}
-          USER: ec2-user  # Change this if you're using a different user
+          USER: ec2-user
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           scp -i private_key -o StrictHostKeyChecking=no your-go-binary $USER@$HOST:~/
