@@ -2,7 +2,7 @@ name: Deploy Go App to EC2
 
 on:
   push:
-    branches: [ master ] # Trigger the workflow on push to main branch
+    branches: [ master ] # Trigger the workflow on push to master branch
 
 jobs:
   deploy:
@@ -16,7 +16,9 @@ jobs:
           go-version: '1.22'  # Specify the Go version you're using
 
       - name: Build
-        run: go build -v github.com/integrationninjas/go-app  # Build your Go application
+        run: |
+          go build -v -o go-app-deploy github.com/integrationninjas/go-app
+          ls -l  # List files to confirm the binary was created
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -32,8 +34,13 @@ jobs:
           USER: ec2-user
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          scp -i private_key -o StrictHostKeyChecking=no your-go-binary $USER@$HOST:~/
+          echo "Attempting to connect to $HOST as $USER..."
+          ssh -i private_key -o StrictHostKeyChecking=no -vvv $USER@$HOST 'echo "Connection successful"'
+          echo "SCP transfer..."
+          scp -i private_key -o StrictHostKeyChecking=no go-app-deploy $USER@$HOST:~/
+          echo "SSH and run..."
           ssh -i private_key -o StrictHostKeyChecking=no $USER@$HOST '
             pkill go-app-deploy || true
             nohup ./go-app-deploy > app.log 2>&1 &
+            echo "Application started"
           '
