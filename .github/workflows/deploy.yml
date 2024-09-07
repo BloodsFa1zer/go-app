@@ -34,7 +34,7 @@ jobs:
 
       - name: Debug SSH key connection
         run: |
-          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no -v ec2-user@ec2-18-198-2-85.eu-central-1.compute.amazonaws.com
+          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no -v centos@ec2-18-198-2-85.eu-central-1.compute.amazonaws.com
 
       - name: Copy app to EC2 instance
         uses: appleboy/scp-action@v0.1.3
