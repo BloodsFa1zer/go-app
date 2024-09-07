@@ -1,36 +1,39 @@
-name: Deploy to EC2
+name: Deploy Go App to EC2
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ] # Trigger the workflow on push to main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.22'  # Specify the Go version you're using
 
-      - name: Add EC2 instance to known_hosts
-        run: ssh-keyscan -H ec2-18-198-2-85.eu-central-1.compute.amazonaws.com >> ~/.ssh/known_hosts
+      - name: Build
+        run: go build -v github.com/integrationninjas/go-app  # Build your Go application
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1  # Change this to your AWS region
 
       - name: Deploy to EC2
         env:
-          EC2_HOST: ec2-18-198-2-85.eu-central-1.compute.amazonaws.com
-          EC2_USER: ec2-user
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ec2-user  # Change this if you're using a different user
         run: |
-          ssh -i ~/.ssh/id_rsa $EC2_USER@$EC2_HOST << 'EOF'
-            cd /home/ec2-user/go-app
-            git pull origin master
-            go build -o main ./main.go
-            pkill -f ./main || true
-            nohup ./main &
-          EOF
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          scp -i private_key -o StrictHostKeyChecking=no your-go-binary $USER@$HOST:~/
+          ssh -i private_key -o StrictHostKeyChecking=no $USER@$HOST '
+            pkill go-app-deploy || true
+            nohup ./go-app-deploy > app.log 2>&1 &
+          '
