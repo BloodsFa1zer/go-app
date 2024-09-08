@@ -25,7 +25,7 @@ jobs:
       - name: Copy app to EC2 instance
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: 35.156.115.105
           username: ec2-user
           key: ${{ secrets.EC2_KEY }}
           source: ./myapp
@@ -34,9 +34,11 @@ jobs:
       - name: Run app on EC2
         uses: appleboy/ssh-action@v0.1.4
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: 35.156.115.105
           username: ec2-user
           key: ${{ secrets.EC2_KEY }}
           script: |
             chmod +x ~/myapp
             ~/myapp
+# ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
+# 35.156.115.105
