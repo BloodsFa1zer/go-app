@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - master  # Adjust this to the branch you want to auto-deploy from
+      - master
 
 jobs:
   deploy:
@@ -11,29 +11,32 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Set up SSH
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+
+      - name: Build Go app
         run: |
-          echo "${{ secrets.EC2_KEY }}" > /tmp/ssh_key
-          chmod 600 /tmp/ssh_key
+          go build -o myapp /Users/mishashevnuk/GolandProjects/go-app-deploy/main.go
 
       - name: Copy app to EC2 instance
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
+          host: ${{ secrets.EC2_HOST }}
           username: ec2-user
-          key: /tmp/ssh_key
-          source: "./go-app-deploy"  # Adjust to your Go app folder
-          target: "~/go-app-deploy"
+          key: ${{ secrets.EC2_KEY }}
+          source: ./myapp
+          target: ~/myapp
 
-      - name: Run Go app on EC2
+      - name: Run app on EC2
         uses: appleboy/ssh-action@v0.1.4
         with:
-          host: ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
+          host: ${{ secrets.EC2_HOST }}
           username: ec2-user
-          key: /tmp/ssh_key
+          key: ${{ secrets.EC2_KEY }}
           script: |
-            cd ~/go-app-deploy
-            go build -o myapp .
-            ./myapp  # Adjust this command to how you run your Go app
+            chmod +x ~/myapp
+            ~/myapp
