@@ -24,8 +24,8 @@ jobs:
           host: ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
           username: ec2-user
           key: /tmp/ssh_key
-          source: "./go-app"  # Adjust to your Go app folder
-          target: "~/go-app"
+          source: "./go-app-deploy"  # Adjust to your Go app folder
+          target: "~/go-app-deploy"
 
       - name: Run Go app on EC2
         uses: appleboy/ssh-action@v0.1.4
@@ -34,6 +34,6 @@ jobs:
           username: ec2-user
           key: /tmp/ssh_key
           script: |
-            cd ~/go-app
+            cd ~/go-app-deploy
             go build -o myapp .
             ./myapp  # Adjust this command to how you run your Go app
