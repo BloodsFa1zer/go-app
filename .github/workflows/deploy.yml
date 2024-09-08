@@ -20,7 +20,7 @@ jobs:
 
       - name: Build Go app
         run: |
-          go build -o myapp /Users/mishashevnuk/GolandProjects/go-app-deploy/main.go
+          go build -o myapp main.go
 
       - name: Copy app to EC2 instance
         uses: appleboy/scp-action@v0.1.4
