@@ -31,14 +31,20 @@ jobs:
           source: ./myapp
           target: ~/myapp
 
-      - name: Run app on EC2
+      - name: Run app on EC2 instance
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: 35.156.115.105
           username: ec2-user
-          key: ${{ secrets.EC2_KEY }}
+          key: ${{ secrets.EC2_KEY }} # Ensure this is correctly set up in Secrets
+          port: 22
           script: |
-            chmod +x ~/myapp
-            ~/myapp
+            cd ~/go-app-deploy
+            chmod +x main
+            ./main
+          key_path: '' # Leave empty if you're using the key secret
+          passphrase: ''
+          use_insecure_cipher: true
+
 # ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
 # 35.156.115.105
