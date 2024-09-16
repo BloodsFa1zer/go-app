@@ -1,3 +1,6 @@
+# ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
+# 35.156.115.105
+
 name: Deploy to EC2
 
 on:
@@ -25,7 +28,7 @@ jobs:
       - name: Copy app to EC2 instance
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: 35.156.115.105
+          host: 35.156.115.10
           username: ec2-user
           key: ${{ secrets.EC2_KEY }}
           source: ./myapp
@@ -34,18 +37,13 @@ jobs:
       - name: Run app on EC2 instance
         uses: appleboy/ssh-action@v0.1.4
         with:
-          host: 35.156.115.105
-          username: ec2-user
-          key: ${{ secrets.EC2_KEY }}
+          host: 35.156.115.10
+          username: ${{ secrets.EC2_USER }}
+          key: ec2-user
           port: 22
-          key_path: /tmp/id_rsa
-          passphrase: ''
           use_insecure_cipher: true
           script: |
-            cd ~/go-app-deploy
-            chmod +x main
-            ./main
+            cd ~/myapp
+            chmod +x myapp
+            ./myapp
           debug: true  # Enable debug mode for more info
-
-# ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
-# 35.156.115.105
