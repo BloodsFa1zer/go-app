@@ -36,15 +36,16 @@ jobs:
         with:
           host: 35.156.115.105
           username: ec2-user
-          key: ${{ secrets.EC2_KEY }} # Ensure this is correctly set up in Secrets
+          key: ${{ secrets.EC2_KEY }}
           port: 22
+          key_path: /tmp/id_rsa
+          passphrase: ''
+          use_insecure_cipher: true
           script: |
             cd ~/go-app-deploy
             chmod +x main
             ./main
-          key_path: '' # Leave empty if you're using the key secret
-          passphrase: ''
-          use_insecure_cipher: true
+          debug: true  # Enable debug mode for more info
 
 # ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
 # 35.156.115.105
