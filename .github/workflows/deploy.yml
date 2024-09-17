@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - master
+      - master  # You can change this to the branch you want to trigger the deployment from
 
 jobs:
   deploy:
@@ -25,27 +25,22 @@ jobs:
       - name: Copy app to EC2 instance
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: 35.156.115.105
+          host: 35.156.115.105  # Your EC2 IP address
           username: ec2-user
-          key: ${{ secrets.EC2_KEY }}
-          source: ./myapp
-          target: ~/myapp
+          key: ${{ secrets.EC2_KEY }}  # Private key stored in GitHub secrets
+          port: 22
+          source: ./myapp  # The app you built
+          target: ~/go-app-deploy/myapp  # The target directory on the EC2 instance
 
       - name: Run app on EC2 instance
         uses: appleboy/ssh-action@v0.1.4
         with:
-          host: 35.156.115.105
+          host: 35.156.115.105  # Your EC2 IP address
           username: ec2-user
-          key: ${{ secrets.EC2_KEY }}
+          key: ${{ secrets.EC2_KEY }}  # Private key stored in GitHub secrets
           port: 22
-          key_path: /tmp/id_rsa
-          passphrase: ''
-          use_insecure_cipher: true
           script: |
             cd ~/go-app-deploy
-            chmod +x main
-            ./main
-          debug: true  # Enable debug mode for more info
-
-# ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
-# 35.156.115.105
+            chmod +x myapp
+            ./myapp
+          debug: true  # Optional, enable for more detailed output
