@@ -16,26 +16,36 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.22'
+          go-version: 1.22
 
       - name: Build Go app
         run: |
           go build -o myapp main.go
 
-      - name: Deploy to EC2
-        env:
-          PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
-          HOST: 35.156.115.105
-          USER: ec2-user
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          scp -o StrictHostKeyChecking=no -i private_key myapp ${USER}@${HOST}:~/go-app-deploy/
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
-            cd ~/go-app-deploy
-            chmod +x myapp
-            ./myapp &
-          '
+      - name: Copy app to EC2 instance
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: 35.156.115.105
+          username: ec2-user
+          key: ${{ secrets.EC2_KEY }}
+          source: ./myapp
+          target: ~/myapp
 
-      - name: Clean up
-        if: always()
-        run: rm -f private_key
+      - name: Run app on EC2 instance
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: 35.156.115.105
+          username: ec2-user
+          key: ${{ secrets.EC2_KEY }}
+          port: 22
+          key_path: /tmp/id_rsa
+          passphrase: ''
+          use_insecure_cipher: true
+          script: |
+            cd ~/go-app-deploy
+            chmod +x main
+            ./main
+          debug: true  # Enable debug mode for more info
+
+# ec2-35-156-115-105.eu-central-1.compute.amazonaws.com
+# 35.156.115.105
